@@ -1,0 +1,20 @@
+[project]
+name = "agentstack-healthcareagent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "a2a-sdk[http-server]==0.3.16",
+    "agent-framework==1.0.0b251120",
+    "agent-framework-a2a==1.0.0b251120",
+    "anthropic[vertex]==0.72.0",
+    "beeai-framework[a2a,vertexai]==0.1.70",
+    "dotenv>=0.9.9",
+    "google-adk[a2a]==1.19.0",
+    "google-auth==2.42.0",
+    "langchain-mcp-adapters==0.1.11",
+    "langchain[openai]==1.0.2",
+    "langgraph==1.0.2",
+    "mcp==1.19.0",
+]
