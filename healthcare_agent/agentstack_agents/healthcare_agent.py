@@ -1,3 +1,4 @@
+import json
 import os
 from typing import Annotated
 
@@ -49,6 +50,18 @@ def to_framework_message(message: Message):
     return UserMessage(message_text)
 
 
+def summarize_for_trajectory(data: object, limit: int = 400) -> str:
+    """
+    Convert tool inputs/outputs to a readable, bounded string for trajectory updates.
+    """
+    try:
+        text = data if isinstance(data, str) else json.dumps(data, default=str)
+    except Exception:
+        text = str(data)
+
+    return text if len(text) <= limit else f"{text[:limit]}... [truncated]"
+
+
 @server.agent(
     name="Healthcare Concierge",
     default_input_modes=["text", "text/plain"],
@@ -79,7 +92,7 @@ async def healthcare_concierge(
     trajectory: Annotated[TrajectoryExtensionServer, TrajectoryExtensionSpec()],
     llm: Annotated[
         LLMServiceExtensionServer,
-        LLMServiceExtensionSpec.single_demand(suggested=("gemini:gemini-2.5-flash",)),
+        LLMServiceExtensionSpec.single_demand(suggested=("gemini:gemini-2.5-flash-lite",)),
     ],
 ):
     """
@@ -169,6 +182,27 @@ async def healthcare_concierge(
             if step.tool and step.tool.name == "think":
                 thoughts = step.input.get("thoughts", "Planning response.")
                 yield trajectory.trajectory_metadata(title="Thinking", content=thoughts[:200])
+            elif step.tool:
+                tool_name = step.tool.name
+                if tool_name != "final_answer":
+                    yield trajectory.trajectory_metadata(
+                        title=f"{tool_name} (request)",
+                        content=summarize_for_trajectory(step.input),
+                    )
+
+                    if getattr(step, "error", None):
+                        yield trajectory.trajectory_metadata(
+                            title=f"{tool_name} (error)",
+                            content=step.error.explain(),
+                        )
+                    else:
+                        output_text = (
+                            step.output.get_text_content() if getattr(step, "output", None) else "No output"
+                        )
+                        yield trajectory.trajectory_metadata(
+                            title=f"{tool_name} (response)",
+                            content=summarize_for_trajectory(output_text),
+                        )
 
     await context.store(AgentMessage(text=response_text))
 
