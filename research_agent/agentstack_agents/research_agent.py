@@ -16,24 +16,18 @@ from beeai_framework.emitter import Emitter
 
 from agentstack_sdk.server.context import RunContext
 from agentstack_sdk.server.store.platform_context_store import PlatformContextStore
+from agentstack_sdk.a2a.extensions.ui.agent_detail import EnvVar
 from agentstack_sdk.a2a.types import AgentMessage
 from agentstack_sdk.a2a.extensions import (
-    AgentDetail, AgentDetailTool, 
+    AgentDetail, AgentDetailTool,
     CitationExtensionServer, CitationExtensionSpec, 
     TrajectoryExtensionServer, TrajectoryExtensionSpec, 
     LLMServiceExtensionServer, LLMServiceExtensionSpec
-)
-from agentstack_sdk.a2a.extensions.auth.secrets import (
-    SecretDemand,
-    SecretsExtensionServer,
-    SecretsExtensionSpec,
-    SecretsServiceExtensionParams,
 )
 from agentstack_sdk.server import Server
 from streaming_citation_parser import StreamingCitationParser
 
 server = Server()
-
 
 class GoogleSearchToolInput(BaseModel):
     query: str = Field(description="Search query to find information")
@@ -67,6 +61,13 @@ class GoogleSearchTool(Tool[GoogleSearchToolInput, ToolRunOptions, JSONToolOutpu
     name="Research Agent",
     detail=AgentDetail(
         interaction_mode="multi-turn",
+        variables=[
+            EnvVar(
+                name="SERPER_API_KEY",
+                description="Serper API Key",
+                required=True
+            )
+        ],
         user_greeting="Hi! I'm a Health Research Agent using Google search powered by Serper API.",
         version="1.0.0",
         tools=[
@@ -94,10 +95,6 @@ class GoogleSearchTool(Tool[GoogleSearchToolInput, ToolRunOptions, JSONToolOutpu
 async def google_search_agent(
     input: Message,
     context: RunContext,
-    secrets: Annotated[
-        SecretsExtensionServer,
-        SecretsExtensionSpec.single_demand(key="SERPER_API_KEY", name="Serper API Key", description="Serper API key"),
-    ],
     trajectory: Annotated[TrajectoryExtensionServer, TrajectoryExtensionSpec()],
     citation: Annotated[CitationExtensionServer, CitationExtensionSpec()],
     llm: Annotated[
@@ -123,23 +120,11 @@ async def google_search_agent(
     
     yield trajectory.trajectory_metadata(title="User Query", content=f"Received: '{user_query}'")
     
-    api_key = None
-    if secrets and secrets.data and secrets.data.secret_fulfillments:
-        api_key = secrets.data.secret_fulfillments['SERPER_API_KEY'].secret
-        yield trajectory.trajectory_metadata(title="API Key", content="Using pre-configured Serper API key")
-    else:
-        yield trajectory.trajectory_metadata(title="API Key", content="Requesting Serper API key from user")
-        runtime_provided_secrets = await secrets.request_secrets(
-            params=SecretsServiceExtensionParams(
-                secret_demands={"SERPER_API_KEY": SecretDemand(description="Serper API key", name="Serper API Key")}
-            )
-        )
-        if runtime_provided_secrets and runtime_provided_secrets.secret_fulfillments:
-            api_key = runtime_provided_secrets.secret_fulfillments['SERPER_API_KEY'].secret
-            yield trajectory.trajectory_metadata(title="API Key", content="Received API key from user")
+   
+    api_key = os.getenv("SERPER_API_KEY","")    
     
     if not api_key:
-        yield "No API key provided"
+        yield "No Serper API Key Provided"
         return
     
     yield trajectory.trajectory_metadata(title="Agent Setup", content="Initializing RequirementAgent with Google search")
@@ -227,7 +212,7 @@ async def google_search_agent(
 def run():
     server.run(
         host = os.environ.get("AGENT_HOST", "127.0.0.1"),
-        port = int(os.environ.get("RESEARCH_AGENT_PORT", 9998)),
+        port = int(os.environ.get("RESEARCH_AGENT_PORT", 9995)),
         context_store=PlatformContextStore()
     )
 
