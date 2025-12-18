@@ -215,7 +215,7 @@ async def healthcare_concierge(
 def run() -> None:
     """Start the AgentStack server for the healthcare concierge."""
     host = os.getenv("HOST", "127.0.0.1")
-    port = int(os.getenv("HEALTH_AGENT_PORT", 2345))
+    port = int(os.getenv("HEALTH_AGENT_PORT", 8000))
     server.run(host=host, port=port)
 
 
