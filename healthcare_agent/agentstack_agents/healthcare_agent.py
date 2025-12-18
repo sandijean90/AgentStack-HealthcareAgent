@@ -134,9 +134,12 @@ async def healthcare_concierge(
 
     #Make the other AgentStack agents discoverable for the handoff tool
     agents = await AgentStackAgent.from_agent_stack(states={AgentStackAgentStatus.ONLINE})
-    handoff_agents = {a for a in agents if a.name in {"PolicyAgent","ResearchAgent","ProviderAgent"}}
+    handoff_agents = {a.name: a for a in agents if a.name in {"PolicyAgent", "ResearchAgent", "ProviderAgent"}}
     print([a.name for a in agents])
-    handoff_tools = [HandoffTool(a) for a in handoff_agents]
+    policy_handoff = HandoffTool(handoff_agents["PolicyAgent"])
+    research_handoff = HandoffTool(handoff_agents["ResearchAgent"])
+    provider_handoff = HandoffTool(handoff_agents["ProviderAgent"])
+    handoff_tools = [policy_handoff, research_handoff, provider_handoff]
 
     think_tool=ThinkTool()
 
@@ -154,11 +157,11 @@ async def healthcare_concierge(
         llm=llm_client,
         name="HealthcareConcierge",
         memory=memory,
-        tools=[think_tool, *handoff_tools],
+        tools=[think_tool, policy_handoff, research_handoff, provider_handoff],
         requirements=[ConditionalRequirement(think_tool, force_at_step=1),
-                      ConditionalRequirement(handoff_tools[0], min_invocations=1, max_invocations=1),
-                      ConditionalRequirement(handoff_tools[1], min_invocations=1, max_invocations=1),
-                      ConditionalRequirement(handoff_tools[2], min_invocations=1, max_invocations=1),
+                      ConditionalRequirement(policy_handoff, min_invocations=1, max_invocations=1),
+                      ConditionalRequirement(research_handoff, min_invocations=1, max_invocations=1),
+                      ConditionalRequirement(provider_handoff, min_invocations=1, max_invocations=1),
                       ],
         role="Healthcare Concierge",
         instructions=instructions,
