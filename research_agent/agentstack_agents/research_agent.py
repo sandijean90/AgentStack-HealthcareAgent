@@ -211,8 +211,8 @@ async def google_search_agent(
 
 def run():
     server.run(
-        host = os.environ.get("AGENT_HOST", "127.0.0.1"),
-        port = int(os.environ.get("RESEARCH_AGENT_PORT", 8000)),
+        host = os.environ.get("HOST", "127.0.0.1"),
+        port = int(os.environ.get("PORT", 8000)),
         context_store=PlatformContextStore()
     )
 
