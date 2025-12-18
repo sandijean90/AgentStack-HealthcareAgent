@@ -128,8 +128,8 @@ async def policy_agent_wraper(
 
 
 def run() -> None:
-    host = os.getenv("AGENT_HOST", "127.0.0.1")
-    port = int(os.getenv("POLICY_AGENT_PORT", 8000))
+    host = os.getenv("HOST", "127.0.0.1")
+    port = int(os.getenv("PORT", 8000))
     server.run(host=host, port=port)
 
 
