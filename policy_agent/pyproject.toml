@@ -21,3 +21,7 @@ dependencies = [
     "pypdf2>=3.0.1",
     "python-dotenv>=1.2.1",
 ]
+
+
+[project.scripts]
+server = "agentstack_agents.provider_agent:run"

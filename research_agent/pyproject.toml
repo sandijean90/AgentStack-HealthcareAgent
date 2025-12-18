@@ -20,3 +20,7 @@ dependencies = [
     "mcp==1.19.0",
     "python-dotenv>=1.2.1",
 ]
+
+
+[project.scripts]
+server = "agentstack_agents.research_agent:run"

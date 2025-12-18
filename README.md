@@ -16,5 +16,6 @@ This repo contains a small network of healthcare-focused A2A agents built on Age
    - `cd research_agent && uv run agentstack_agents/research_agent.py`
    - `cd healthcare_agent && uv run agentstack_agents/healthcare_agent.py`
    (Set the host/port env vars noted above if you need non-defaults.)
-3) Start the AgentStack UI in another terminal (per the quickstart) to see registered A2A servers.
-4) Use the UI: you can call each agent directly, or run the Healthcare agent, which will hand off to the Policy, Research, and Provider agents as needed.
+3) Start the AgentStack UI in another terminal (per the quickstart) to see registered A2A servers by running agent list. You will see that the ResearchAgent is missing an enviorment variable.
+4) In your CLI run: agentstack env add "Research Agent" SERPER_API_KEY="Keyvalue"
+5) Use the UI: you can call each agent directly, or run the Healthcare agent, which will hand off to the Policy, Research, and Provider agents as needed.
