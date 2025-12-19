@@ -133,7 +133,7 @@ async def healthcare_concierge(
 
 
     #Make the other AgentStack agents discoverable for the handoff tool
-    agents = await AgentStackAgent.from_agent_stack(states={AgentStackAgentStatus.READY})
+    agents = await AgentStackAgent.from_agent_stack()
     handoff_agents = {a.name: a for a in agents if a.name in {"PolicyAgent", "ResearchAgent", "ProviderAgent"}}
     print([a.name for a in agents])
     policy_handoff = HandoffTool(handoff_agents["PolicyAgent"])
