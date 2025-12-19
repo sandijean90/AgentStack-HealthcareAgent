@@ -17,7 +17,9 @@ from langchain_openai import ChatOpenAI
 
 
 class ProviderAgent:
+    # Create a Langchain agent to bring onto the AGent Stack Platform as an A2A Server
     def __init__(self, llm) -> None:
+        # Store the LLM and prepare the MCP client for provider lookup
         self.llm = llm
         server_path = Path(__file__).resolve().parent / "mcpserver.py"
         self.mcp_client = MultiServerMCPClient(
@@ -34,6 +36,7 @@ class ProviderAgent:
 
     async def initialize(self):
         """Initialize the agent asynchronously."""
+        # Fetch available MCP tools and build the LangChain agent around them
         tools = await self.mcp_client.get_tools()
         self.agent = create_agent(
             self.llm,
@@ -50,6 +53,7 @@ class ProviderAgent:
         if self.agent is None:
             raise RuntimeError("Agent not initialized. Call initialize() first.")
 
+        # Invoke the agent with the user prompt and return the final content
         response = await self.agent.ainvoke(
             {
                 "messages": [
@@ -62,11 +66,12 @@ class ProviderAgent:
         )
         return response["messages"][-1].content
 
-
+# Create an instance of the server
 server = Server()
 
 
 @server.agent(
+    # Add a name to the agent server so it can be discoverable on Agent Stack by name and called via handoff tool by the healthcare agent
     name="ProviderAgent",
 )
 async def provider_agent_wrapper(
@@ -78,19 +83,23 @@ async def provider_agent_wrapper(
     ],
 ):
     """Wrapper around the provider agent using the AgentStack LLM extension."""
+    # Pull the user's text prompt from the incoming message
     prompt = get_message_text(input)
     llm_config = None
 
+    # Select the default LLM fulfillment from the extension
     if llm and llm.data and llm.data.llm_fulfillments:
         llm_config = llm.data.llm_fulfillments.get("default")
     else:
         yield AgentMessage(text="LLM selection is required.")
         return
 
+    # Ensure we have a valid LLM config to create the client
     if not llm_config:
         yield AgentMessage(text="No LLM configuration available from the extension.")
         return
 
+    # Build the LangChain OpenAI client using platform-provided credentials
     langchain_llm = ChatOpenAI(
         model=llm_config.api_model,
         base_url=llm_config.api_base,
@@ -102,7 +111,7 @@ async def provider_agent_wrapper(
     response = await agent.answer_query(prompt)
     yield AgentMessage(text=response)
 
-
+# Run the server
 def run() -> None:
     host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", 8000))

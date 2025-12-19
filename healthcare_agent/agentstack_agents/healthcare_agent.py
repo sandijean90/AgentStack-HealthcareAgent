@@ -35,6 +35,7 @@ memories: dict[str, UnconstrainedMemory] = {}
 
 
 def get_memory(context: RunContext) -> UnconstrainedMemory:
+    # Keep a per-session memory object so the conversation stays stateful
     """Get or create session memory keyed by context id."""
     context_id = getattr(context, "context_id", getattr(context, "session_id", "default"))
     if context_id not in memories:
@@ -43,6 +44,7 @@ def get_memory(context: RunContext) -> UnconstrainedMemory:
 
 
 def to_framework_message(message: Message):
+    # Normalize A2A messages into BeeAI message types
     """Convert A2A Message to BeeAI Framework Message format."""
     message_text = get_message_text(message)
     if message.role == Role.agent:
@@ -99,11 +101,13 @@ async def healthcare_concierge(
     Healthcare concierge agent that answers insurance and provider questions.
     """
 
+    # Initial UI update to the trajecotry so users see the agent is starting
     yield trajectory.trajectory_metadata(
         title="Initializing Agent...",
         content="Setting up your Healthcare Concierge.",
     )
 
+    # Attach existing session memory and backfill prior messages for multiturn conversations
     memory = get_memory(context)
 
     # Load existing history into BeeAI memory
@@ -132,27 +136,27 @@ async def healthcare_concierge(
     )
 
 
-    #Make the other AgentStack agents discoverable for the handoff tool
+    # Make other AgentStack agents discoverable that have been deployed to the platform and make them available via handoff tools
     agents = await AgentStackAgent.from_agent_stack()
     handoff_agents = {a.name: a for a in agents if a.name in {"PolicyAgent", "ResearchAgent", "ProviderAgent"}}
     print([a.name for a in agents])
     policy_handoff = HandoffTool(handoff_agents["PolicyAgent"])
     research_handoff = HandoffTool(handoff_agents["ResearchAgent"])
     provider_handoff = HandoffTool(handoff_agents["ProviderAgent"])
-    #handoff_tools = [policy_handoff, research_handoff, provider_handoff]
 
     think_tool=ThinkTool()
 
-    #ADD IN THE REAL INSTRUCTION WHEN ADDING IN THE HANDOFF TOOL
+    # High-level agent instruction for tone and routing behavior
     instructions = (
         "You are a friendly healthcare concierge. "
         "Answer questions about plan coverage, in-network providers, and costs. "
         "Hand off your task to the PolicyAgent when there are specific questions pertaining to the user's policy details."
-        "Hand off your task to the ResearchAgent when you need information about symptoms, health conditions, treatments, and procedures using up-to-date web resources."
+        "Hand off your task to the ResearchAgent when you need information about symptoms, health conditions, treatments, or procedures using up-to-date web resources."
         "Hand off your task to the ProviderAgent when you need information about the providers in network."
         "If unsure, ask clarifying questions before giving guidance."
     )
 
+    #BeeAI Requirement agent with conditional requirements
     agent = RequirementAgent(
         llm=llm_client,
         name="HealthcareConcierge",
@@ -173,9 +177,11 @@ async def healthcare_concierge(
 
     def handle_final_answer_stream(data, meta) -> None:
         nonlocal response_text
+        # Accumulate streamed final answer text
         if getattr(data, "delta", None):
             response_text += data.delta
 
+    # Run the agent loop and stream trajectory + final answer updates
     async for event, meta in agent.run(
         user_prompt,
         execution=AgentExecutionConfig(max_iterations=20, max_retries_per_step=2),
@@ -212,9 +218,10 @@ async def healthcare_concierge(
                             content=summarize_for_trajectory(output_text),
                         )
 
+    # Persist the final response in conversation history
     await context.store(AgentMessage(text=response_text))
 
-
+# Start the server and run the agent
 def run() -> None:
     """Start the AgentStack server for the healthcare concierge."""
     host = os.getenv("HOST", "127.0.0.1")

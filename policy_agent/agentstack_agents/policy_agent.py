@@ -29,6 +29,7 @@ class PolicyAgent:
             "If the information is not available in the documents, respond with \"I don't know\"."
         ),
     ) -> None:
+        # Configure prompts and load the policy document for reference
         self.system_prompt = system_prompt
 
         self.pdf_path = Path(pdf_path) if pdf_path else Path(__file__).resolve().parent / "2026AnthemgHIPSBC.pdf"
@@ -37,6 +38,7 @@ class PolicyAgent:
 
     @staticmethod
     def _load_pdf(path: Path) -> bytes:
+        # Read the PDF file as raw bytes for tools that might need it
         if not path.exists():
             raise FileNotFoundError(f"PDF not found at {path.resolve()}")
         return path.read_bytes()
@@ -56,6 +58,7 @@ class PolicyAgent:
         return "\n\n".join(pages)
 
     def build_prompt(self, prompt: str) -> str:
+        # Build a single prompt with policy text plus the user’s question
         return (
             f"{self.system_prompt}\n\n"
             "Reference policy document text below. Use it to answer the question. "
@@ -71,6 +74,7 @@ class PolicyAgent:
         if not llm_config or not llm_config.api_key:
             return "LLM service not available. Please enable the LLM extension for this agent."
 
+        # Create the model client from the platform-provided config
         llm_client = OpenAIChatModel(
             model_id=llm_config.api_model,
             base_url=llm_config.api_base,
@@ -79,6 +83,7 @@ class PolicyAgent:
             tool_choice_support={"auto", "required"},
         )
 
+        # Ask the LLM with system prompt, policy text, and user question
         response = await llm_client.run(
             [
                 SystemMessage(self.system_prompt),
@@ -93,11 +98,11 @@ class PolicyAgent:
         text = response.get_text_content() if hasattr(response, "get_text_content") else None
         return text or "I don't know"
 
-
+# Create the server and policy agent instance from the class
 server = Server()
 policy_agent = PolicyAgent()
 
-
+# Provide the server with an Agent name so it can be discovered on the Agent Stack Platform by name and called by the Healthcare agent as a handoff tool
 @server.agent(
     name="PolicyAgent",
 )
@@ -110,23 +115,27 @@ async def policy_agent_wraper(
     ],
 ):
     """Wrapper around the policy agent using the AgentStack LLM extension."""
+    # Pull the raw user message text
     prompt = get_message_text(input)
     llm_config = None
 
+    # Get the default LLM fulfillment from the extension
     if llm and llm.data and llm.data.llm_fulfillments:
         llm_config = llm.data.llm_fulfillments.get("default")
     else:
         yield AgentMessage(text="LLM selection is required.")
         return
 
+    # Validate we have an LLM config
     if not llm_config:
         yield AgentMessage(text="No LLM configuration available from the extension.")
         return
 
+    # Delegate to the policy agent and stream the answer
     response = await policy_agent.answer_query(prompt, llm_config)
     yield AgentMessage(text=response)
 
-
+# Run the server with 
 def run() -> None:
     host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", 8000))

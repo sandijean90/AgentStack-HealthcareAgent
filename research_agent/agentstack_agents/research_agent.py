@@ -27,12 +27,14 @@ from agentstack_sdk.a2a.extensions import (
 from agentstack_sdk.server import Server
 from .streaming_citation_parser import StreamingCitationParser
 
+# Create an instance of the Agent Stack Server
 server = Server()
 
+# Create the input schema for the google search tool the agent will use
 class GoogleSearchToolInput(BaseModel):
     query: str = Field(description="Search query to find information")
 
-
+# Create the google search tool
 class GoogleSearchTool(Tool[GoogleSearchToolInput, ToolRunOptions, JSONToolOutput]):
     name = "google_search"
     description = "Search Google using Serper API for current information"
@@ -46,6 +48,7 @@ class GoogleSearchTool(Tool[GoogleSearchToolInput, ToolRunOptions, JSONToolOutpu
         return Emitter.root().child(namespace=["tool", "serper"], creator=self)
     
     async def _run(self, input: GoogleSearchToolInput, options: ToolRunOptions | None, context: BeeRunContext) -> JSONToolOutput:
+        # Call Serper's search API and return JSON results to the agent
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 "https://google.serper.dev/search",
@@ -56,11 +59,12 @@ class GoogleSearchTool(Tool[GoogleSearchToolInput, ToolRunOptions, JSONToolOutpu
             response.raise_for_status()
             return JSONToolOutput(response.json())
 
-
+# Add a name to the agent server so it can be discoverable on Agent Stack by name and called via handoff tool by the healthcare agent
 @server.agent(
     name="ResearchAgent",
     detail=AgentDetail(
         interaction_mode="multi-turn",
+        # Add enviorment variables through the CLI so the agent has the credentials it needs to use its tools
         variables=[
             EnvVar(
                 name="SERPER_API_KEY",
@@ -106,21 +110,24 @@ async def google_search_agent(
 ):
     """Agent that provides information about health conditions, treatments, and procedures"""
     
+    # Record the incoming message to context history
     await context.store(input)
 
+    # Extract raw text from the incoming message parts
     user_query = ""
     for part in input.parts:
         if part.root.kind == "text":
             user_query = part.root.text
             break
     
+    # Validate we have a query
     if not user_query:
         yield "Please provide a search query."
         return
     
     yield trajectory.trajectory_metadata(title="User Query", content=f"Received: '{user_query}'")
     
-   
+    # Get Serper API key from environment
     api_key = os.getenv("SERPER_API_KEY","")    
     
     if not api_key:
@@ -133,13 +140,16 @@ async def google_search_agent(
         if not llm or not llm.data:
             raise ValueError("LLM service extension is required but not available")
 
+        # Pull the default LLM fulfillment config
         llm_config = llm.data.llm_fulfillments.get("default")
         if not llm_config:
             raise ValueError("No LLM fulfillment available")
 
+        # Configure the AgentStack chat model with streaming enabled
         llm_client = AgentStackChatModel(parameters=ChatModelParameters(stream=True))
         llm_client.set_context(llm)
         
+        # Build a RequirementAgent wired with the Google search tool
         agent = RequirementAgent(
             llm=llm_client,
             tools=[GoogleSearchTool(api_key)],
@@ -153,9 +163,11 @@ async def google_search_agent(
         
         def handle_final_answer_stream(data: RequirementAgentFinalAnswerEvent, meta):
             nonlocal response_text
+            # Accumulate streamed final-answer text
             if data.delta:
                 response_text += data.delta
         
+        # Run the agent loop, streaming both content and citations
         async for event, meta in agent.run(user_query).on("final_answer", handle_final_answer_stream):
             if meta.name == "final_answer":
                 if isinstance(event, RequirementAgentFinalAnswerEvent) and event.delta:
@@ -173,6 +185,7 @@ async def google_search_agent(
                     search_count += 1
                     search_query = step.input.get("query", "Unknown")
                     
+                    # Surface search queries and result counts to the trajectory UI
                     yield trajectory.trajectory_metadata(
                         title=f"Search #{search_count}", 
                         content=f"Query: '{search_query}'"
@@ -203,12 +216,13 @@ async def google_search_agent(
         await context.store(response_message)
     
     except Exception as e:
+        # Surface errors to the trajectory and store the failure message
         yield trajectory.trajectory_metadata(title="Error", content=f"Exception: {str(e)}")
         error_msg = f"Error: {str(e)}"
         yield error_msg
         await context.store(AgentMessage(text=error_msg))
 
-
+# Run the server
 def run():
     server.run(
         host = os.environ.get("HOST", "127.0.0.1"),
