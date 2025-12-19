@@ -20,7 +20,7 @@ This repo shows how agents built in different frameworks can be deployed on Agen
    The platform builds and runs each agent for you—no need to start the servers manually.
 3) You will see that the ResearchAgent is missing an environment variable. In your CLI run:
    ```bash
-   agentstack env add "Research Agent" SERPER_API_KEY="Keyvalue"
+   agentstack env add "ResearchAgent" SERPER_API_KEY="Keyvalue"
    ```
 4) Start the AgentStack UI:
    ```bash
