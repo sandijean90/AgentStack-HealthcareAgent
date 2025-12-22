@@ -11,8 +11,7 @@ from agentstack_sdk.a2a.extensions import PlatformApiExtensionServer, PlatformAp
 from agentstack_sdk.a2a.types import AgentMessage
 from agentstack_sdk.server import Server
 from agentstack_sdk.server.context import RunContext
-from langchain.agents.agent import create_agent
-from langchain.agents.agent_executor import AgentExecutor
+from langchain.agents import create_agent
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_mcp_adapters.sessions import StdioConnection
 from langchain_openai import ChatOpenAI
@@ -35,7 +34,6 @@ class ProviderAgent:
         )
 
         self.agent = None
-        self.agent_executor = None
 
     async def initialize(self):
         """Initialize the agent asynchronously."""
@@ -46,25 +44,18 @@ class ProviderAgent:
             tools,
             name="HealthcareProviderAgent",
             system_prompt=(
-                "You must retrieve healthcare providers by calling the ONLY available MCP tool "
-                "`find_healthcare_providers:list_doctors`. Always make exactly ONE tool call before "
-                "responding, never invent other tools, and do not return a final answer until after "
-                "the tool call succeeds. Tool calls must use JSON arguments with the keys `state` and "
-                "`city` (strings, either may be omitted if unknown). Example tool arguements:\n"
-                'Arguments: {\"state\": \"CA\", \"city\": \"San Francisco\"}\n'
-                "Use location details you can infer from the query. "
+                "Your task is to find and list providers using the available MCP tool(s). "
+                "Call the MCP tool to retrieve providers and ground your response strictly on its output."
             ),
         )
-        # Executor actually runs tool calls and returns the final answer text
-        self.agent_executor = AgentExecutor(agent=self.agent, tools=tools, verbose=False)
         return self
 
     async def answer_query(self, prompt: str) -> str:
-        if self.agent_executor is None:
+        if self.agent is None:
             raise RuntimeError("Agent not initialized. Call initialize() first.")
 
-        # Run through the executor so tool calls execute and we get the final output
-        result = await self.agent_executor.ainvoke(
+        # Invoke the agent with the user prompt and return the final content
+        response = await self.agent.ainvoke(
             {
                 "messages": [
                     {
@@ -74,7 +65,7 @@ class ProviderAgent:
                 ]
             }
         )
-        return result.get("output", "")
+        return response["messages"][-1].content
 
 # Create an instance of the server
 server = Server()
