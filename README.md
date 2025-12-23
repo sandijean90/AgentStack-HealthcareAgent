@@ -27,3 +27,22 @@ This repo shows how agents built in different frameworks can be deployed on Agen
    agentstack ui
    ```
 5) Test the agents from the UI. Run them individually or run the Healthcare agent to see A2A handoffs across the Policy, Research, and Provider agents.
+
+## Sample Questions to Ask Each Agent
+
+### Helathcare Agent 
+* I need mental health assistance and live in Austin Texas. Who can I see and what is covered by my policy?
+* I am pregnant and need care in Miami, Florida. What are my options?
+
+### Policy Agent
+* Tell me about my policy.
+* What is my coinsurance for office visits both in and out of network?
+
+### Provider Agent
+* What kind of doctors can I see in Houston Texas?
+* I have a rash, who can I see in Los Angeles CA?
+
+### Research Agent
+* Tell me about the different types od diabetes.
+* What can I do to reduce my cholesterol?
+
