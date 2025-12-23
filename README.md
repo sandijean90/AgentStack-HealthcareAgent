@@ -43,6 +43,6 @@ This repo shows how agents built in different frameworks can be deployed on Agen
 * I have a rash, who can I see in Los Angeles CA?
 
 ### Research Agent
-* Tell me about the different types od diabetes.
+* Tell me about the different types of diabetes.
 * What can I do to reduce my cholesterol?
 
