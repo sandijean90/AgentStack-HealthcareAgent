@@ -12,10 +12,10 @@ This repo shows how agents built in different frameworks can be deployed on Agen
 1) Install and start AgentStack using the quickstart (https://agentstack.beeai.dev/stable/introduction/quickstart), configuring your LLM provider as Gemini with the preferred model `gemini-2.5-flash-lite`.
 2) Add the agents through the AgentStack CLI (replace the release tag with the latest available on GitHub):
    ```bash
-   agentstack add https://github.com/sandijean90/AgentStack-HealthcareAgent@release-0.0.14#path=/policy_agent
-   agentstack add https://github.com/sandijean90/AgentStack-HealthcareAgent@release-0.0.14#path=/provider_agent
-   agentstack add https://github.com/sandijean90/AgentStack-HealthcareAgent@release-0.0.14#path=/research_agent
-   agentstack add https://github.com/sandijean90/AgentStack-HealthcareAgent@release-0.0.14#path=/healthcare_agent
+   agentstack add https://github.com/sandijean90/AgentStack-HealthcareAgent@release-0.0.16#path=/policy_agent
+   agentstack add https://github.com/sandijean90/AgentStack-HealthcareAgent@release-0.0.16#path=/provider_agent
+   agentstack add https://github.com/sandijean90/AgentStack-HealthcareAgent@release-0.0.16#path=/research_agent
+   agentstack add https://github.com/sandijean90/AgentStack-HealthcareAgent@release-0.0.16#path=/healthcare_agent
    ```
    The platform builds and runs each agent for you—no need to start the servers manually.
 3) You will see that the ResearchAgent is missing an environment variable. In your CLI run:
