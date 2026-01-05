@@ -46,3 +46,7 @@ This repo shows how agents built in different frameworks can be deployed on Agen
 * Tell me about the different types of diabetes.
 * What can I do to reduce my cholesterol?
 
+## Known Limitations
+- The policy agent only has access to a summary of benefits with lmited information and will return "I don't know" (which is a valid response from this agent).
+- The provider agent needs a very specifically formed tool call because of the expected input of the tool on the  mcp server. This can result in a malformed tool call depending on the LLM used and the strength of the system prompt. Future improvements can include a more flexible tool call.
+
