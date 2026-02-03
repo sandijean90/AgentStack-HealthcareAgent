@@ -1,14 +1,23 @@
 # Agent Stack Healthcare Agents
-This repo shows how agents built in different frameworks can be deployed on [Agent Stack](https://agentstack.beeai.dev/stable/introduction/welcome). All agents run as A2A servers, so they can talk to each other whether you are running Agent Stack locally or on a hosted deployment within your organization. Imagine your org’s hosted Agent Stack where the HR agents can seamlessly call the Finance agents. This example does the same with healthcare agents.
+*Run multi-agent systems as real services with [A2A](https://github.com/a2aproject/A2A) and [Agent Stack](https://agentstack.beeai.dev/stable/introduction/welcome).*
+
+This repo shows how agents built in different frameworks can be run as real services using Agent Stack. The agents communicate over A2A, so they can call each other whether you’re running locally or on a hosted deployment.
+
+You’ll build and run a small multi-agent healthcare system and see how agent workflows move from notebooks to real runtimes.
+
+## Why Agent Stack
+In this tutorial, Agent Stack handles the runtime, LLM inference, networking, and service lifecycle for each agent. This lets you focus on agent logic and orchestration, while still running everything as real, callable services—like you would in a production app.
 
 ## Agents in this repo
-- `healthcare_agent/Agent Stack_agents/healthcare_agent.py`: Concierge/orchestrator that uses BeeAI’s RequirementAgent plus HandoffTool to route questions to the PolicyAgent, ResearchAgent, or ProviderAgent.
+- `healthcare_agent/Agent Stack_agents/healthcare_agent.py`: Concierge/orchestrator that routes questions to the PolicyAgent, ResearchAgent, or ProviderAgent using BeeAI’s RequirementAgent and HandoffTool.
 - `policy_agent/Agent Stack_agents/policy_agent.py`: Answers coverage questions by reading `2026AnthemgHIPSBC.pdf` with the LLM provided by the Agent Stack extension.
 - `provider_agent/Agent Stack_agents/provider_agent.py`: Finds providers via a custom MCP tool backed by `mcpserver.py` and returns results with an Agent Stack-provisioned LLM.
 - `provider_agent/Agent Stack_agents/mcpserver.py`: FastMCP server that lists doctors from `doctors.json`; started on demand by the ProviderAgent.
-- `research_agent/Agent Stack_agents/research_agent.py`: Health research agent that searches the web via Serper. Requests/uses `SERPER_API_KEY` through the Secrets extension and runs with the Agent Stack LLM extension.
+- `research_agent/Agent Stack_agents/research_agent.py`: Health research agent that searches the web via Serper. Requests and uses `SERPER_API_KEY` through the Secrets extension and runs with the Agent Stack LLM extension.
 
-## Local run (Agent Stack-managed)
+## Running the agents as services (via Agent Stack)
+These agents are ran on your local machine's instance of Agent Stack, however adding agents to a self-hosted version of Agent Stack follows a similar pattern.
+
 1) Install and start Agent Stack using the [quickstart](https://AgentStack.beeai.dev/stable/introduction/quickstart), configuring your LLM provider as Gemini with the preferred model `gemini-2.5-flash-lite`.
 > **Note for Windows users:** When you are running the Agent Stack platform start command the first time, select to configure the network as "nat" mode, not "mirrored" mode.  This network mode will allow the deployment of agents from github as directed in this repo. If the network mode selection is not seen, networkingmode can be changed to "nat" in the C:/Users/<your name>/.wslconfig file, and applied by shutting WSL down with "wsl --shutdown" and restarting with "agentstack platform start".
 2) Add the agents through the Agent Stack CLI (replace the release tag with the latest available on GitHub):
@@ -19,7 +28,7 @@ This repo shows how agents built in different frameworks can be deployed on [Age
    agentstack add https://github.com/sandijean90/Agent Stack-HealthcareAgent@release-0.0.16#path=/healthcare_agent
    ```
    The platform builds and runs each agent for you—no need to start the servers manually.
-3) You will see that the ResearchAgent is missing an environment variable. Replace the API key with your personal key and in your CLI run:
+3) Set the required environment variable for the ResearchAgent. Replace the API key with your personal key and in your CLI run:
    ```bash
    agentstack env add "ResearchAgent" SERPER_API_KEY="Keyvalue"
    ```
@@ -52,3 +61,9 @@ This repo shows how agents built in different frameworks can be deployed on [Age
 - For demo/illustrative purposes all agents are called (in a dynamic order) for each task. This may not be necessarily depending on the task and can be changed in the conditional requirements to yield better performance.
 - The provider agent needs a very specifically formed tool call because of the expected input of the tool on the  mcp server. This can result in a malformed tool call depending on the LLM used and the strength of the system prompt. Future improvements can include a more flexible tool call.
 
+## Next Steps
+Want to use this pattern in your own app or internal tool?
+
+This tutorial runs agents as real services using Agent Stack. You can use the same setup to wire agents into your own product or workflows.
+
+#### [Get started with Agent Stack](https://agentstack.beeai.dev/stable/introduction/quickstart)
