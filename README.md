@@ -4,11 +4,55 @@
 This repo shows how agents built in different frameworks can be run as real services using Agent Stack. The agents communicate over A2A, so they can call each other whether you’re running locally or on a hosted deployment.
 
 You’ll build and run a small multi-agent healthcare system and see how agent workflows move from notebooks to real runtimes.
+```mermaid
+flowchart TB
+
+  %% =========================
+  %% Agent Stack (force horizontal)
+  %% =========================
+  subgraph AS["Agent Stack"]
+    direction LR
+    Runtime["Runtime"] ~~~ LLM["LLM Inference"] ~~~ Secrets["Secrets"] ~~~ UI["CLI / UI"]
+  end
+
+  %% =========================
+  %% Agents
+  %% =========================
+  subgraph AG["Healthcare Agents"]
+    HC["HealthcareAgent"]
+    PA["PolicyAgent"]
+    PrA["ProviderAgent"]
+    RA["ResearchAgent"]
+  end
+
+  %% =========================
+  %% Agent Resources
+  %% =========================
+  subgraph RES["Agent Resources"]
+    PDF["Policy PDF"]
+    MCP["MCP Server + doctors.json"]
+    SERP["Serper API"]
+  end
+
+  %% =========================
+  %% Protocol boundary
+  %% =========================
+  AS -- "A2A Protocol" --> AG
+
+  %% =========================
+  %% Resource usage
+  %% =========================
+  PA --> PDF
+  PrA --> MCP
+  RA --> SERP
+
+```
 
 ## Why Agent Stack
 In this tutorial, Agent Stack handles the runtime, LLM inference, networking, and service lifecycle for each agent. This lets you focus on agent logic and orchestration, while still running everything as real, callable services—like you would in a production app.
 
 ## Agents in this repo
+
 - `healthcare_agent/Agent Stack_agents/healthcare_agent.py`: Concierge/orchestrator that routes questions to the PolicyAgent, ResearchAgent, or ProviderAgent using BeeAI’s RequirementAgent and HandoffTool.
 - `policy_agent/Agent Stack_agents/policy_agent.py`: Answers coverage questions by reading `2026AnthemgHIPSBC.pdf` with the LLM provided by the Agent Stack extension.
 - `provider_agent/Agent Stack_agents/provider_agent.py`: Finds providers via a custom MCP tool backed by `mcpserver.py` and returns results with an Agent Stack-provisioned LLM.
