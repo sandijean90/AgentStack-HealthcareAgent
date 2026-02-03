@@ -10,22 +10,22 @@ This repo shows how agents built in different frameworks can be deployed on [Age
 
 ## Local run (Agent Stack-managed)
 1) Install and start Agent Stack using the [quickstart](https://AgentStack.beeai.dev/stable/introduction/quickstart), configuring your LLM provider as Gemini with the preferred model `gemini-2.5-flash-lite`.
-> **Note for Windows users:** When you are running the Agent Stack platform start command the first time, select to configure the network as "nat" mode, not "mirrored" mode.  This network mode will allow the deployment of agents from github as directed in this repo. If the network mode selection is not seen, networkingmode can be changed to "nat" in the C:/Users/<your name>/.wslconfig file, and applied by shutting WSL down with "wsl --shutdown" and restarting with "Agent Stack platform start".
+> **Note for Windows users:** When you are running the Agent Stack platform start command the first time, select to configure the network as "nat" mode, not "mirrored" mode.  This network mode will allow the deployment of agents from github as directed in this repo. If the network mode selection is not seen, networkingmode can be changed to "nat" in the C:/Users/<your name>/.wslconfig file, and applied by shutting WSL down with "wsl --shutdown" and restarting with "agentstack platform start".
 2) Add the agents through the Agent Stack CLI (replace the release tag with the latest available on GitHub):
    ```bash
-   Agent Stack add https://github.com/sandijean90/Agent Stack-HealthcareAgent@release-0.0.16#path=/policy_agent
-   Agent Stack add https://github.com/sandijean90/Agent Stack-HealthcareAgent@release-0.0.16#path=/provider_agent
-   Agent Stack add https://github.com/sandijean90/Agent Stack-HealthcareAgent@release-0.0.16#path=/research_agent
-   Agent Stack add https://github.com/sandijean90/Agent Stack-HealthcareAgent@release-0.0.16#path=/healthcare_agent
+   agentstack add https://github.com/sandijean90/Agent Stack-HealthcareAgent@release-0.0.16#path=/policy_agent
+   agentstack add https://github.com/sandijean90/Agent Stack-HealthcareAgent@release-0.0.16#path=/provider_agent
+   agentstack add https://github.com/sandijean90/Agent Stack-HealthcareAgent@release-0.0.16#path=/research_agent
+   agentstack add https://github.com/sandijean90/Agent Stack-HealthcareAgent@release-0.0.16#path=/healthcare_agent
    ```
    The platform builds and runs each agent for you—no need to start the servers manually.
 3) You will see that the ResearchAgent is missing an environment variable. Replace the API key with your personal key and in your CLI run:
    ```bash
-   Agent Stack env add "ResearchAgent" SERPER_API_KEY="Keyvalue"
+   agentstack env add "ResearchAgent" SERPER_API_KEY="Keyvalue"
    ```
 4) Start the Agent Stack UI:
    ```bash
-   Agent Stack ui
+   agentstack ui
    ```
 5) Test the agents from the UI. Run them individually or run the Healthcare agent to see A2A handoffs across the Policy, Research, and Provider agents.
 
