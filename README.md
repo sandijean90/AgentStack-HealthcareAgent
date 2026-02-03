@@ -1,5 +1,5 @@
 # Agent Stack Healthcare Agents
-This repo shows how agents built in different frameworks can be deployed on [Agent Stack](https://agentstack.beeai.dev/stable/introduction/welcome). All agents run as A2A servers, so they can talk to each other whether you are running Agent Stack locally or on a hosted deployment within your organization. Imagine your org’s hosted Agent Stack where the HR agents can seamlessly call the Finance agents. This example does the same with healthcare agents. Install instructions for Agent Stack are available in the [quickstart](https://AgentStack.beeai.dev/stable/introduction/quickstart).
+This repo shows how agents built in different frameworks can be deployed on [Agent Stack](https://agentstack.beeai.dev/stable/introduction/welcome). All agents run as A2A servers, so they can talk to each other whether you are running Agent Stack locally or on a hosted deployment within your organization. Imagine your org’s hosted Agent Stack where the HR agents can seamlessly call the Finance agents. This example does the same with healthcare agents.
 
 ## Agents in this repo
 - `healthcare_agent/Agent Stack_agents/healthcare_agent.py`: Concierge/orchestrator that uses BeeAI’s RequirementAgent plus HandoffTool to route questions to the PolicyAgent, ResearchAgent, or ProviderAgent.
@@ -9,7 +9,7 @@ This repo shows how agents built in different frameworks can be deployed on [Age
 - `research_agent/Agent Stack_agents/research_agent.py`: Health research agent that searches the web via Serper. Requests/uses `SERPER_API_KEY` through the Secrets extension and runs with the Agent Stack LLM extension.
 
 ## Local run (Agent Stack-managed)
-1) Install and start Agent Stack using the quickstart (https://Agent Stack.beeai.dev/stable/introduction/quickstart), configuring your LLM provider as Gemini with the preferred model `gemini-2.5-flash-lite`.
+1) Install and start Agent Stack using the [quickstart](https://AgentStack.beeai.dev/stable/introduction/quickstart), configuring your LLM provider as Gemini with the preferred model `gemini-2.5-flash-lite`.
 > **Note for Windows users:** When you are running the Agent Stack platform start command the first time, select to configure the network as "nat" mode, not "mirrored" mode.  This network mode will allow the deployment of agents from github as directed in this repo. If the network mode selection is not seen, networkingmode can be changed to "nat" in the C:/Users/<your name>/.wslconfig file, and applied by shutting WSL down with "wsl --shutdown" and restarting with "Agent Stack platform start".
 2) Add the agents through the Agent Stack CLI (replace the release tag with the latest available on GitHub):
    ```bash
@@ -19,7 +19,7 @@ This repo shows how agents built in different frameworks can be deployed on [Age
    Agent Stack add https://github.com/sandijean90/Agent Stack-HealthcareAgent@release-0.0.16#path=/healthcare_agent
    ```
    The platform builds and runs each agent for you—no need to start the servers manually.
-3) You will see that the ResearchAgent is missing an environment variable. In your CLI run:
+3) You will see that the ResearchAgent is missing an environment variable. Replace the API key with your personal key and in your CLI run:
    ```bash
    Agent Stack env add "ResearchAgent" SERPER_API_KEY="Keyvalue"
    ```
