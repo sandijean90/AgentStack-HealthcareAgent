@@ -60,10 +60,9 @@ In this tutorial, Agent Stack handles the runtime, LLM inference, networking, an
 - `research_agent/Agent Stack_agents/research_agent.py`: Health research agent that searches the web via Serper. Requests and uses `SERPER_API_KEY` through the Secrets extension and runs with the Agent Stack LLM extension.
 
 ## Running the agents as services (via Agent Stack)
-These agents are ran on your local machine's instance of Agent Stack, however adding agents to a self-hosted version of Agent Stack follows a similar pattern.
+These agents are run on your local machine's instance of Agent Stack, however, adding agents to a self-hosted version of Agent Stack follows a similar pattern.
 
-1) Install and start Agent Stack using the [quickstart](https://AgentStack.beeai.dev/stable/introduction/quickstart), configuring your LLM provider as Gemini with the preferred model `gemini-2.5-flash-lite`.
-> **Note for Windows users:** When you are running the Agent Stack platform start command the first time, select to configure the network as "nat" mode, not "mirrored" mode.  This network mode will allow the deployment of agents from github as directed in this repo. If the network mode selection is not seen, networkingmode can be changed to "nat" in the C:/Users/<your name>/.wslconfig file, and applied by shutting WSL down with "wsl --shutdown" and restarting with "agentstack platform start".
+1) Install and start Agent Stack using the [quickstart](https://AgentStack.beeai.dev/stable/introduction/quickstart), configuring your LLM provider as Gemini with the preferred model `gemini-2.5-flash-lite`. To configure your Gemini LLM you will need an API Key, which can be obtained from [here](https://aistudio.google.com/app/api-keys).
 2) Add the agents through the Agent Stack CLI (replace the release tag with the latest available on GitHub):
    ```bash
    agentstack add https://github.com/sandijean90/AgentStack-HealthcareAgent@release-0.0.16#path=/policy_agent
@@ -72,7 +71,7 @@ These agents are ran on your local machine's instance of Agent Stack, however ad
    agentstack add https://github.com/sandijean90/AgentStack-HealthcareAgent@release-0.0.16#path=/healthcare_agent
    ```
    The platform builds and runs each agent for you—no need to start the servers manually.
-3) Set the required environment variable for the ResearchAgent. Replace the API key with your personal key and in your CLI run:
+3) Set the required environment variable for the ResearchAgent. Replace the API key with your personal key, which can be obtained [here](https://serper.dev/api-keys), and in your CLI run:
    ```bash
    agentstack env add "ResearchAgent" SERPER_API_KEY="Keyvalue"
    ```
@@ -80,7 +79,7 @@ These agents are ran on your local machine's instance of Agent Stack, however ad
    ```bash
    agentstack ui
    ```
-5) Test the agents from the UI. Run them individually or run the Healthcare agent to see A2A handoffs across the Policy, Research, and Provider agents.
+5) Test the agents from the UI. Run them individually or run the Healthcare agent to see A2A handoffs across the Policy, Research, and Provider agents. Each agent that is individually run will open a new browser tab, with the Agent Stack home remaining in the original tab.
 
 ## Sample Questions to Ask Each Agent
 
@@ -101,8 +100,8 @@ These agents are ran on your local machine's instance of Agent Stack, however ad
 * What can I do to reduce my cholesterol?
 
 ## Known Limitations
-- The policy agent only has access to a summary of benefits with lmited information and can return "I don't know" (which is a valid response from this agent) depending on the question.
-- For demo/illustrative purposes all agents are called (in a dynamic order) for each task. This may not be necessarily depending on the task and can be changed in the conditional requirements to yield better performance.
+- The policy agent only has access to a summary of benefits with limited information and can return "I don't know" (which is a valid response from this agent) depending on the question.
+- For demo/illustrative purposes, all agents are called (in a dynamic order) for each task. This may not be necessary depending on the task and can be changed in the conditional requirements to yield better performance.
 - The provider agent needs a very specifically formed tool call because of the expected input of the tool on the  mcp server. This can result in a malformed tool call depending on the LLM used and the strength of the system prompt. Future improvements can include a more flexible tool call.
 
 ## Next Steps
