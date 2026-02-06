@@ -63,6 +63,13 @@ In this tutorial, Agent Stack handles the runtime, LLM inference, networking, an
 These agents are run on your local machine's instance of Agent Stack, however, adding agents to a self-hosted version of Agent Stack follows a similar pattern.
 
 1) Install and start Agent Stack using the [quickstart](https://AgentStack.beeai.dev/stable/introduction/quickstart), configuring your LLM provider as Gemini with the preferred model `gemini-2.5-flash-lite`. To configure your Gemini LLM you will need an API Key, which can be obtained from [here](https://aistudio.google.com/app/api-keys).
+
+##### ⚠️ Version Compatibility
+This project was built and tested using **agentstack-cli==0.4.3**.  
+If you want the same user experience, install this exact version of AgentStack.
+New releases happen frequently and may introduce breaking changes or different behavior.
+
+
 2) Add the agents through the Agent Stack CLI (replace the release tag with the latest available on GitHub):
    ```bash
    agentstack add https://github.com/sandijean90/AgentStack-HealthcareAgent@release-0.0.16#path=/policy_agent
